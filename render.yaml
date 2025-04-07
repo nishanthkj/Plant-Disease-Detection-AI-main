@@ -1,8 +1,8 @@
 services:
   - type: web
-    name: plant-disease-detection
+    name: plant-disease-app
     env: python
-    region: oregon
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python app.py"
-    plan: free
+    buildCommand: ""
+    startCommand: python app.py
+    build:
+      pythonVersion: 3.12.1
