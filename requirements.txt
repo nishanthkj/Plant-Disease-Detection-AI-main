@@ -125,7 +125,7 @@ networkx==3.3
 nltk==3.9.1
 notebook==7.2.1
 notebook_shim==0.2.4
-numpy==1.26.4
+#numpy==1.26.4
 opencv-python==4.10.0.84
 opencv-python-headless==4.10.0.84
 opt_einsum==3.4.0
@@ -161,7 +161,7 @@ python-dotenv==1.0.1
 python-json-logger==2.0.7
 python-slugify==8.0.4
 pytz==2024.2
-pywin32==306
+#pywin32==306
 pywinpty==2.0.13
 PyYAML==6.0.1
 pyzmq==26.0.3
