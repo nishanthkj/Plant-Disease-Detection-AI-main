@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AgriBot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #e0f7e9, #d3e5ff);
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+      .chat-container {
+        width: 600px; /* ⬅️ Wider chat UI */
+        height: 640px;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+}
+
+
+    .chat-header {
+      background-color: #3a5a40;
+      color: white;
+      padding: 16px;
+      font-weight: 600;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .bubble {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .user .bubble {
+      background-color: #3a5a40;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bot .bubble {
+      background-color: #f0f0f0;
+      color: #333;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-input {
+      display: flex;
+      align-items: center;
+      border-top: 1px solid #ddd;
+      padding: 10px;
+      gap: 8px;
+    }
+
+    .chat-input input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 20px;
+      outline: none;
+      background: #f4f4f4;
+    }
+
+    .chat-input input[type="file"] {
+      display: none;
+    }
+
+    .upload-icon {
+      background-color: #3a5a40;
+      color: white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .chat-input button {
+      background: #3a5a40;
+      color: white;
+      border: none;
+      padding: 0 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      height: 32px;
+      width: 32px;
+    }
+
+    .bubble img {
+      max-width: 100%;
+      margin-top: 8px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">🌱 AgriBot</div>
+    <div class="chat-box" id="chat-box">
+      <div class="message bot">
+        <div class="avatar">🤖</div>
+        <div class="bubble">I'm AgriBot! Ask me anything about agriculture.</div>
+      </div>
+    </div>
+    <div class="chat-input">
+      <label class="upload-icon" for="file-input">📷</label>
+      <input type="file" id="file-input" accept="image/*" onchange="uploadImage(this)">
+      <input type="text" id="user-input" placeholder="Type your message...">
+      <button onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <script>
+    function addMessage(sender, text, imageUrl = null) {
+      const box = document.getElementById('chat-box');
+      const msg = document.createElement('div');
+      msg.className = `message ${sender}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.innerText = sender === 'user' ? '🧑' : '🤖';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.innerText = text;
+
+      if (imageUrl) {
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        bubble.appendChild(img);
+      }
+
+      msg.appendChild(avatar);
+      msg.appendChild(bubble);
+      box.appendChild(msg);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('user-input');
+      const message = input.value.trim();
+      if (!message) return;
+
+      addMessage('user', message);
+      input.value = '';
+
+      const res = await fetch('/chat', {
+        method: 'POST',
+        body: new URLSearchParams({ message }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+      const data = await res.json();
+      addMessage('bot', data.response);
+    }
+
+    async function uploadImage(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const res = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (data.prediction && data.image_url) {
+        addMessage('user', "Here's an image I uploaded:", data.image_url);
+        addMessage('bot', `🧪 Prediction: ${data.prediction}`);
+      } else {
+        addMessage('bot', '⚠️ Error uploading image.');
+      }
+    }
+  </script>
+</body>
+</html>
