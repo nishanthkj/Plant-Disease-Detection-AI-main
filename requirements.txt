@@ -157,7 +157,7 @@ python-dotenv==1.0.1
 python-json-logger==2.0.7
 python-slugify==8.0.4
 pytz==2024.2
-pywin32==310
+#pywin32==310
 pywinpty==2.0.15
 PyYAML==6.0.1
 pyzmq==26.0.3
