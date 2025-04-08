@@ -8,7 +8,8 @@ from torchvision import models
 import google.generativeai as genai
 import tempfile
 import mimetypes
-
+import io
+import base64
 # ✅ Set your Gemini API key
 genai.configure(api_key="AIzaSyCJ1Zt3_Zyez3S1bS1EPFHpLF-qmzERqwE")  # 🔁 Replace with your actual Gemini API key
 
