@@ -67,8 +67,46 @@ def chat():
         reply = "⚠️ Oops! Something went wrong. Please try again."
     return jsonify({"response": reply})
 
+
 @app.route("/upload", methods=["POST"])
 def upload():
+    file = request.files.get("image")
+    if file:
+        # ✅ Read image into memory
+        image_bytes = file.read()
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+
+        # ✅ Preprocess the image for model
+        tensor = transform(image).unsqueeze(0)
+
+        # 🔮 Predict the class
+        with torch.no_grad():
+            output = resnet_model(tensor)
+            _, predicted = torch.max(output, 1)
+            prediction = class_names[predicted.item()]
+
+        # 💬 Ask Gemini
+        prompt = f"What is {prediction}? Explain it in simple terms, symptoms, and treatments."
+        try:
+            gemini_response = gemini_model.generate_content(prompt)
+            disease_info = gemini_response.text
+        except Exception as e:
+            print("Gemini error:", e)
+            disease_info = "⚠️ Could not fetch disease information. Please try again."
+
+        # ✅ Convert image to base64 string
+        buffered = io.BytesIO()
+        image.save(buffered, format="JPEG")
+        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        image_url = f"data:image/jpeg;base64,{img_str}"
+
+        return jsonify({
+            "prediction": prediction,
+            "image_url": image_url,
+            "disease_info": disease_info
+        })
+
+    return jsonify({"error": "No image uploaded"}), 400
     file = request.files.get("image")
     if file:
         # Save to temp file
