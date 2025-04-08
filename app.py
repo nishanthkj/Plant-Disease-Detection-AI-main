@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
@@ -6,12 +6,13 @@ import os
 import torch.nn as nn
 from torchvision import models
 import google.generativeai as genai
+import tempfile
+import mimetypes
 
+# ✅ Set your Gemini API key
+genai.configure(api_key="AIzaSyCJ1Zt3_Zyez3S1bS1EPFHpLF-qmzERqwE")  # 🔁 Replace with your actual Gemini API key
 
-
-# ✅ Set your API key
-genai.configure(api_key="AIzaSyCJ1Zt3_Zyez3S1bS1EPFHpLF-qmzERqwE")
-
+# ✅ Initialize Gemini model
 gemini_model = genai.GenerativeModel(
     model_name="models/gemini-1.5-pro",
     system_instruction=(
@@ -22,13 +23,8 @@ gemini_model = genai.GenerativeModel(
     )
 )
 
-
-
-
 # ✅ Initialize Flask app
 app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = "static/uploads"
-os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # ✅ Load PyTorch ResNet model for crop disease prediction
 resnet_model = models.resnet18(weights='IMAGENET1K_V1')
@@ -66,31 +62,30 @@ def chat():
         response = gemini_model.generate_content(user_msg)
         reply = response.text
     except Exception as e:
-        print("Error:", e)
-        reply = "⚠️ Oops! Something went wrong. Please try again in a bit."
+        print("Gemini Error:", e)
+        reply = "⚠️ Oops! Something went wrong. Please try again."
     return jsonify({"response": reply})
-
 
 @app.route("/upload", methods=["POST"])
 def upload():
     file = request.files.get("image")
     if file:
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+        # Save to temp file
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg", dir=".")
+        filepath = temp_file.name
         file.save(filepath)
 
-        # 🔍 Preprocess the image
+        # Predict disease
         image = Image.open(filepath).convert("RGB")
         image = transform(image).unsqueeze(0)
 
-        # 🔮 Predict the class
         with torch.no_grad():
             output = resnet_model(image)
             _, predicted = torch.max(output, 1)
             prediction = class_names[predicted.item()]
 
-        # 💬 Ask Gemini to explain the disease
+        # Ask Gemini for explanation
         prompt = f"What is {prediction}? Explain it in simple terms, symptoms, and treatments."
-
         try:
             gemini_response = gemini_model.generate_content(prompt)
             disease_info = gemini_response.text
@@ -98,14 +93,20 @@ def upload():
             print("Gemini error:", e)
             disease_info = "⚠️ Could not fetch disease information. Please try again."
 
+        filename = os.path.basename(filepath)
         return jsonify({
             "prediction": prediction,
-            "image_url": f"/{filepath.replace(os.sep, '/')}",
+            "image_url": f"/temp-image/{filename}",
             "disease_info": disease_info
         })
 
     return jsonify({"error": "No image uploaded"}), 400
 
+@app.route("/temp-image/<filename>")
+def serve_temp_image(filename):
+    path = os.path.join(".", filename)
+    mimetype = mimetypes.guess_type(path)[0] or 'image/jpeg'
+    return send_file(path, mimetype=mimetype)
+
 if __name__ == "__main__":
     app.run(debug=True)
-

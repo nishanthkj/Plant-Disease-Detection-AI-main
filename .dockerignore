@@ -1,0 +1,31 @@
+/venv/
+/agri/
+/agri2/
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+venv/
+env/
+.agri2/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore local uploads and logs
+static/uploads/
+*.log
+
+# Ignore git files
+.git
+.gitignore
+
+# Ignore IDE/editor settings
+.vscode/
+*.swp
+*.sublime-project
+*.sublime-workspace

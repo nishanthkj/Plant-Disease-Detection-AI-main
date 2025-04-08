@@ -14,18 +14,16 @@
       justify-content: center;
       align-items: center;
     }
-      .chat-container {
-        width: 600px; /* ⬅️ Wider chat UI */
-        height: 640px;
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-}
-
-
+    .chat-container {
+      width: 600px;
+      height: 640px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
     .chat-header {
       background-color: #3a5a40;
       color: white;
@@ -34,7 +32,6 @@
       text-align: center;
       font-size: 18px;
     }
-
     .chat-box {
       flex: 1;
       padding: 16px;
@@ -43,13 +40,11 @@
       flex-direction: column;
       gap: 12px;
     }
-
     .message {
       display: flex;
       align-items: flex-end;
       gap: 8px;
     }
-
     .avatar {
       width: 32px;
       height: 32px;
@@ -61,7 +56,6 @@
       font-size: 18px;
       flex-shrink: 0;
     }
-
     .bubble {
       max-width: 75%;
       padding: 10px 14px;
@@ -70,19 +64,16 @@
       line-height: 1.4;
       word-wrap: break-word;
     }
-
     .user .bubble {
       background-color: #3a5a40;
       color: white;
       border-bottom-right-radius: 4px;
     }
-
     .bot .bubble {
       background-color: #f0f0f0;
       color: #333;
       border-bottom-left-radius: 4px;
     }
-
     .chat-input {
       display: flex;
       align-items: center;
@@ -90,7 +81,6 @@
       padding: 10px;
       gap: 8px;
     }
-
     .chat-input input[type="text"] {
       flex: 1;
       padding: 10px;
@@ -99,11 +89,9 @@
       outline: none;
       background: #f4f4f4;
     }
-
     .chat-input input[type="file"] {
       display: none;
     }
-
     .upload-icon {
       background-color: #3a5a40;
       color: white;
@@ -115,7 +103,6 @@
       justify-content: center;
       cursor: pointer;
     }
-
     .chat-input button {
       background: #3a5a40;
       color: white;
@@ -127,7 +114,6 @@
       height: 32px;
       width: 32px;
     }
-
     .bubble img {
       max-width: 100%;
       margin-top: 8px;
@@ -211,7 +197,7 @@
 
       if (data.prediction && data.image_url) {
         addMessage('user', "Here's an image I uploaded:", data.image_url);
-        addMessage('bot', `🧪 Prediction: ${data.prediction}`);
+        addMessage('bot', `🧪 Prediction: ${data.prediction}\n\n🩺 Info: ${data.disease_info}`);
       } else {
         addMessage('bot', '⚠️ Error uploading image.');
       }
