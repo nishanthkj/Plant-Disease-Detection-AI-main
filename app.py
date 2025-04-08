@@ -70,7 +70,7 @@ def chat():
         reply = "⚠️ Oops! Something went wrong. Please try again in a bit."
     return jsonify({"response": reply})
 
-@app.route("/upload", methods=["POST"])
+
 @app.route("/upload", methods=["POST"])
 def upload():
     file = request.files.get("image")
