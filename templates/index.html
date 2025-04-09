@@ -3,20 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <title>AgriBot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
       background: linear-gradient(to right, #e0f7e9, #d3e5ff);
-      margin: 0;
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 10px;
     }
+
     .chat-container {
-      width: 600px;
-      height: 640px;
+      width: 100%;
+      max-width: 600px;
+      height: 100%;
+      max-height: 720px;
       background: #fff;
       border-radius: 20px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
@@ -24,6 +34,7 @@
       flex-direction: column;
       overflow: hidden;
     }
+
     .chat-header {
       background-color: #3a5a40;
       color: white;
@@ -32,6 +43,7 @@
       text-align: center;
       font-size: 18px;
     }
+
     .chat-box {
       flex: 1;
       padding: 16px;
@@ -39,12 +51,17 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      word-wrap: break-word;
+      word-break: break-word;
     }
+
     .message {
       display: flex;
-      align-items: flex-end;
+      align-items: flex-start;
       gap: 8px;
+      flex-wrap: wrap;
     }
+
     .avatar {
       width: 32px;
       height: 32px;
@@ -56,68 +73,88 @@
       font-size: 18px;
       flex-shrink: 0;
     }
+
     .bubble {
-      max-width: 75%;
-      padding: 10px 14px;
+      background: #f0f0f0;
       border-radius: 16px;
+      padding: 10px 14px;
       font-size: 14px;
-      line-height: 1.4;
-      word-wrap: break-word;
+      max-width: 80%;
+      word-break: break-word;
     }
+
     .user .bubble {
       background-color: #3a5a40;
       color: white;
       border-bottom-right-radius: 4px;
     }
+
     .bot .bubble {
-      background-color: #f0f0f0;
-      color: #333;
       border-bottom-left-radius: 4px;
     }
+
+    .bubble img {
+      max-width: 100%;
+      margin-top: 8px;
+      border-radius: 12px;
+    }
+
     .chat-input {
       display: flex;
       align-items: center;
-      border-top: 1px solid #ddd;
       padding: 10px;
-      gap: 8px;
+      border-top: 1px solid #ddd;
+      gap: 10px;
+      background: #fff;
     }
+
     .chat-input input[type="text"] {
       flex: 1;
-      padding: 10px;
-      border: none;
+      padding: 10px 14px;
       border-radius: 20px;
-      outline: none;
-      background: #f4f4f4;
+      border: none;
+      background-color: #f4f4f4;
+      font-size: 14px;
     }
+
     .chat-input input[type="file"] {
       display: none;
     }
-    .upload-icon {
+
+    .icon-button {
+      width: 36px;
+      height: 36px;
       background-color: #3a5a40;
       color: white;
+      border: none;
       border-radius: 50%;
-      width: 32px;
-      height: 32px;
+      font-size: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
     }
-    .chat-input button {
-      background: #3a5a40;
-      color: white;
-      border: none;
-      padding: 0 16px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 18px;
-      height: 32px;
-      width: 32px;
-    }
-    .bubble img {
-      max-width: 100%;
-      margin-top: 8px;
-      border-radius: 12px;
+
+    @media (max-width: 600px) {
+      .chat-container {
+        height: 95vh;
+      }
+
+      .chat-input {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chat-input input[type="text"] {
+        width: 100%;
+        font-size: 13px;
+      }
+
+      .icon-button {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -131,14 +168,23 @@
       </div>
     </div>
     <div class="chat-input">
-      <label class="upload-icon" for="file-input">📷</label>
+      <label class="icon-button" for="file-input" title="Upload Image">📷</label>
       <input type="file" id="file-input" accept="image/*" onchange="uploadImage(this)">
       <input type="text" id="user-input" placeholder="Type your message...">
-      <button onclick="sendMessage()">➤</button>
+      <button class="icon-button" onclick="startVoice()" title="Voice Input">🎤</button>
+      <button class="icon-button" onclick="sendMessage()" title="Send">➤</button>
     </div>
   </div>
 
   <script>
+    function speakText(text) {
+      const synth = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 1;
+      synth.speak(utterance);
+    }
+
     function addMessage(sender, text, imageUrl = null) {
       const box = document.getElementById('chat-box');
       const msg = document.createElement('div');
@@ -162,6 +208,10 @@
       msg.appendChild(bubble);
       box.appendChild(msg);
       box.scrollTop = box.scrollHeight;
+
+      if (sender === 'bot') {
+        speakText(text);
+      }
     }
 
     async function sendMessage() {
@@ -177,6 +227,7 @@
         body: new URLSearchParams({ message }),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
+
       const data = await res.json();
       addMessage('bot', data.response);
     }
@@ -201,6 +252,40 @@
       } else {
         addMessage('bot', '⚠️ Error uploading image.');
       }
+    }
+
+    function startVoice() {
+      const isOpera = navigator.userAgent.includes("OPR");
+      const isSpeechSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+
+      if (!isSpeechSupported || isOpera) {
+        alert("🎤 Voice input is not supported in this browser. Please use Google Chrome.");
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        console.log("🎙️ Listening...");
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('user-input').value = transcript;
+        sendMessage();
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        addMessage('bot', '⚠️ Voice recognition failed. Try again or use Chrome.');
+      };
+
+      recognition.start();
     }
   </script>
 </body>

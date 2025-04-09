@@ -73,6 +73,9 @@ def upload():
     file = request.files.get("image")
     if file:
         # ✅ Read image into memory
+        # temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg", dir="uploads/")
+        # filepath = temp_file.name
+        # file.save(filepath)
         image_bytes = file.read()
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
