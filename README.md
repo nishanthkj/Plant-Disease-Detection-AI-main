@@ -122,4 +122,4 @@ The web application uses Flask as the backend framework. It consists of the foll
 - PlantVillage Dataset
 
 
-under guidance of [Dr Agughasi Victor Ikechukwu](https://github.com/Victor-Ikechukwu)
+
