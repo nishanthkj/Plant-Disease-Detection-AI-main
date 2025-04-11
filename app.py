@@ -10,8 +10,48 @@ import tempfile
 import mimetypes
 import io
 import base64
+from dotenv import load_dotenv
 # ✅ Set your Gemini API key
-genai.configure(api_key="AIzaSyCJ1Zt3_Zyez3S1bS1EPFHpLF-qmzERqwE")  # 🔁 Replace with your actual Gemini API key
+# ✅ Load .env variables
+load_dotenv()
+
+# ✅ Access the API key from the environment
+api_key = os.getenv("GEMINI_API_KEY")
+
+# ✅ Configure Gemini
+genai.configure(api_key=api_key)
+
+import re
+
+def clean_response(text):
+    if not text:
+        return ""
+
+    # 1️⃣ Remove emojis and non-ASCII characters
+    text = text.encode('ascii', 'ignore').decode()
+
+    # 2️⃣ Remove markdown and symbols
+    text = re.sub(r'[*_#`~>\[\](){}]', '', text)
+
+    # 3️⃣ Normalize multiple punctuation
+    text = re.sub(r'([!?.]){2,}', r'\1', text)
+
+    # 4️⃣ Remove extra symbols
+    text = re.sub(r'[^\w\s.,;:!?\'\"-]', '', text)
+
+    # 5️⃣ Insert newline before key headings
+    keywords = ['Symptoms:', 'Treatment:', 'Prevention:', 'Caused by', 'Overview:', 'Description:']
+    for kw in keywords:
+        text = text.replace(kw, f'\n\n{kw}')
+
+    # 6️⃣ Normalize multiple spaces/newlines
+    text = re.sub(r'\s{2,}', ' ', text)
+    text = re.sub(r'(\n\s*){2,}', '\n\n', text)
+
+    # 7️⃣ Final clean
+    return text.strip()
+
+
 
 # ✅ Initialize Gemini model
 gemini_model = genai.GenerativeModel(
@@ -61,7 +101,7 @@ def chat():
     user_msg = request.form.get("message")
     try:
         response = gemini_model.generate_content(user_msg)
-        reply = response.text
+        reply = clean_response(response.text)
     except Exception as e:
         print("Gemini Error:", e)
         reply = "⚠️ Oops! Something went wrong. Please try again."
@@ -92,7 +132,7 @@ def upload():
         prompt = f"What is {prediction}? Explain it in simple terms, symptoms, and treatments."
         try:
             gemini_response = gemini_model.generate_content(prompt)
-            disease_info = gemini_response.text
+            disease_info = clean_response(gemini_response.text)
         except Exception as e:
             print("Gemini error:", e)
             disease_info = "⚠️ Could not fetch disease information. Please try again."
