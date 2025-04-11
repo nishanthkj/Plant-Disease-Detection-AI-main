@@ -16,9 +16,17 @@ call venv\Scripts\activate
 echo 📦 Installing Python packages...
 pip install -r requirements.txt
 
-:: Step 4: Check if .env exists
+:: Step 4: Handle .env and API key
 if exist .env (
-    echo ⚠️  .env file already exists. Skipping API key input.
+    echo ⚠️  .env file already exists.
+    set /p CHANGEKEY=❓ Do you want to change the API key? (Y/N): 
+    if /I "%CHANGEKEY%"=="Y" (
+        set /p APIKEY=🔑 Enter your new Gemini API key: 
+        echo GEMINI_API_KEY=%APIKEY%> .env
+        echo ✅ API key updated in .env!
+    ) else (
+        echo ⏩ Skipping API key update.
+    )
 ) else (
     set /p APIKEY=🔑 Enter your Gemini API key: 
     echo GEMINI_API_KEY=%APIKEY%> .env
